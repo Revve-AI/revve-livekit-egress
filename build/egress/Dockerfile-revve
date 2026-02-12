@@ -59,7 +59,7 @@ FROM livekit/gstreamer:1.24.12-prod
 
 ARG TARGETPLATFORM
 
-# install deps and patch OS
+# install deps
 RUN apt-get update && \
     apt-get install -y \
     curl \
@@ -69,10 +69,14 @@ RUN apt-get update && \
     unzip \
     wget \
     xvfb \
-    gstreamer1.0-plugins-base- && \
-    apt-get upgrade -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    gstreamer1.0-plugins-base-
+
+# install chrome
+COPY --from=livekit/chrome-installer:125.0.6422.141 /chrome-installer /chrome-installer
+RUN /chrome-installer/install-chrome "$TARGETPLATFORM"
+
+# clean up
+RUN rm -rf /var/lib/apt/lists/*
 
 # create egress user
 RUN useradd -ms /bin/bash -g root -G sudo,pulse,pulse-access egress
@@ -86,5 +90,7 @@ COPY build/egress/entrypoint.sh /
 
 # run
 USER egress
+ENV PATH=${PATH}:/chrome
 ENV XDG_RUNTIME_DIR=/home/egress/.cache/xdgr
+ENV CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome-devel-sandbox
 ENTRYPOINT ["/entrypoint.sh"]
