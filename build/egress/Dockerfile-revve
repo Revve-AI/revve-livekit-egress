@@ -69,7 +69,9 @@ RUN apt-get update && \
     unzip \
     wget \
     xvfb \
-    gstreamer1.0-plugins-base-
+    gstreamer1.0-plugins-base- && \
+    apt-get upgrade -y && \
+    apt-get clean
 
 # install chrome
 COPY --from=livekit/chrome-installer:125.0.6422.141 /chrome-installer /chrome-installer
